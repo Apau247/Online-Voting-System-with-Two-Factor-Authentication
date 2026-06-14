@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SecureVote</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+    <div class="container">
+        <h2>Login to Vote</h2>
+        <form id="loginForm">
+            <input type="hidden" name="csrf_token" value="">
+            <div>
+                <label>Email:</label>
+                <input type="email" name="email" required>
+            </div>
+            <div>
+                <label>Password:</label>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <p>Don't have an account? <a href="register.html">Register</a></p>
+    </div>
+
+    <script>
+        // CSRF token
+        document.querySelector('input[name="csrf_token"]').value = 'csrf-placeholder'; // Set via JS/PHP
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const response = await fetch('api/login.php', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            if (data.success) {
+                if (data.requires_2fa) {
+                    window.location.href = '2fa.html';
+                } else {
+                    window.location.href = data.redirect;
+                }
+            } else {
+                alert(data.error);
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureVote - Secure Online Voting</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="assets/js/main.js" defer></script>
+</head>
+<body>
+    <header>
+        <nav>
+            <div class="logo">SecureVote</div>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="login.html">Login</a></li>
+                <li><a href="register.html">Register</a></li>
+            </ul>
+        </nav>
+    </header>
+    <main class="hero">
+        <h1>Welcome to Secure Online Voting</h1>
+        <p>Transparent, secure, and accessible elections for everyone. Built with modern security standards.</p>
+        <div class="cta-buttons">
+            <a href="register.html" class="btn primary">Register as Voter</a>
+            <a href="login.html" class="btn secondary">Login</a>
+        </div>
+        <div class="features">
+            <div class="feature">
+                <h3>2FA Protection</h3>
+                <p>Google Authenticator compatible TOTP</p>
+            </div>
+            <div class="feature">
+                <h3>Prevent Double Voting</h3>
+                <p>Unique vote enforcement per election</p>
+            </div>
+            <div class="feature">
+                <h3>Audit Logs</h3>
+                <p>Full transparency and traceability</p>
+            </div>
+        </div>
+    </main>
+    <?php include 'includes/footer.php'; ?>  <!-- Note: PHP not active in static HTML, use JS for dynamic -->
+</body>
+</html>
