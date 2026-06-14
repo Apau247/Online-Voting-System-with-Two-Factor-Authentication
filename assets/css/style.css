@@ -1,0 +1,32 @@
+/* SecureVote base styles */
+:root{
+  --bg:#0b1220;
+  --card:#111a2e;
+  --text:#e7eefc;
+  --muted:#a9b7d0;
+  --primary:#4f8cff;
+  --secondary:#22314f;
+  --danger:#ff4f6d;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#070b14);color:var(--text)}
+header nav{display:flex;justify-content:space-between;align-items:center;padding:16px 24px}
+.logo{font-weight:800;letter-spacing:.2px}
+nav ul{list-style:none;display:flex;gap:16px;margin:0;padding:0}
+nav a{color:var(--text);text-decoration:none;opacity:.9}
+nav a:hover{opacity:1;text-decoration:underline}
+.container{max-width:520px;margin:64px auto;padding:24px;background:rgba(17,26,46,.9);border:1px solid rgba(255,255,255,.08);border-radius:14px}
+.hero{max-width:980px;margin:56px auto;padding:24px}
+.hero .cta-buttons{display:flex;gap:12px;margin-top:20px;flex-wrap:wrap}
+.btn{display:inline-block;padding:10px 14px;border-radius:10px;text-decoration:none;border:1px solid rgba(255,255,255,.12)}
+.btn.primary{background:var(--primary);color:#081224;border-color:rgba(0,0,0,.15)}
+.btn.secondary{background:transparent;color:var(--text)}
+.features{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:28px}
+.feature{background:rgba(17,26,46,.8);border:1px solid rgba(255,255,255,.08);border-radius:14px;padding:16px}
+.site-footer{padding:22px 24px;text-align:center;color:var(--muted)}
+@media (max-width:900px){.features{grid-template-columns:1fr}}
+form{display:flex;flex-direction:column;gap:12px}
+input{width:100%;padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.12);background:rgba(7,11,20,.6);color:var(--text)}
+button{padding:10px 14px;border-radius:10px;border:none;background:var(--primary);color:#081224;font-weight:700;cursor:pointer}
+button:hover{filter:brightness(1.03)}
+

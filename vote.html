@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vote - SecureVote</title>
+  <link rel="stylesheet" href="assets/css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h2>Cast your vote</h2>
+    <div id="elections" style="margin-top:14px"></div>
+    <p style="color:var(--muted)">You must be logged in and have 2FA enabled.</p>
+  </div>
+
+  <script>
+    (async function(){
+      const root = document.getElementById('elections');
+      try{
+        const res = await fetch('api/elections.php');
+        const data = await res.json();
+        if(!data.success) { root.innerHTML = '<p>'+ (data.error||'Could not load elections') +'</p>'; return; }
+        root.innerHTML = data.elections.map(e => `
+          <div style="margin:14px 0;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:12px">
+            <h3 style="margin:0 0 8px 0">${e.title}</h3>
+            <button onclick="loadCandidates(${e.id})">Vote</button>
+            <div id="cand-${e.id}" style="margin-top:10px"></div>
+          </div>
+        `).join('');
+      }catch(err){
+        root.innerHTML = '<p>Failed to load elections.</p>';
+      }
+    })();
+
+    window.loadCandidates = async function(electionId){
+      const target = document.getElementById('cand-'+electionId);
+      target.innerHTML = 'Loading candidates...';
+      const res = await fetch('api/elections.php?election_id='+encodeURIComponent(electionId));
+      const data = await res.json();
+      if(!data.success){ target.innerHTML = '<p>'+ (data.error||'Failed') +'</p>'; return; }
+
+      target.innerHTML = `
+        <form id="vote-form-${electionId}">
+          <input type="hidden" name="election_id" value="${electionId}">
+          <input type="hidden" name="csrf_token" value="csrf-placeholder">
+          ${data.candidates.map(c => `
+            <label style="display:flex;gap:10px;align-items:center;margin:10px 0;cursor:pointer">
+              <input type="radio" name="candidate_id" value="${c.id}" required />
+              <span><strong>${c.name}</strong>${c.party? ' ('+c.party+')':''}</span>
+            </label>
+          `).join('')}
+          <button type="submit">Submit vote</button>
+        </form>
+      `;
+
+      document.getElementById('vote-form-'+electionId).addEventListener('submit', async (e)=>{
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const r = await fetch('api/vote.php', { method:'POST', body: formData });
+        const d = await r.json().catch(()=>({}));
+        if(d.success){ alert('Vote submitted'); window.location.reload(); }
+        else alert(d.error || 'Vote failed');
+      });
+    }
+  </script>
+</body>
+</html>
+

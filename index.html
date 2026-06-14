@@ -40,6 +40,7 @@
             </div>
         </div>
     </main>
-    <?php include 'includes/footer.php'; ?>  <!-- Note: PHP not active in static HTML, use JS for dynamic -->
+    <footer class="site-footer">&copy; <span id="year"></span> SecureVote</footer>
+    <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
 </body>
 </html>
