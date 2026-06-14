@@ -1,47 +1,47 @@
-# 🗳️ Online Voting System with Two-Factor Authentication
+# SecureVote - Online Voting System with 2FA
 
-## 📌 Overview
-This project is an **Online Voting System** designed to provide a secure, transparent, and user-friendly platform for conducting elections digitally. To ensure the integrity of the voting process, the system integrates **Two-Factor Authentication (2FA)**, adding an extra layer of security to voter login and ballot casting.
+## Overview
+A secure starter for large-scale online elections (10k+ voters) with TOTP 2FA.
 
----
+## Tech Stack
+- Frontend: HTML5, CSS3, Vanilla JS
+- Backend: PHP 8+
+- DB: MySQL/MariaDB
+- 2FA: Pure PHP TOTP (compatible with Google Authenticator)
 
-## 🔑 Features
-- **User Registration & Authentication**
-  - Secure voter registration with unique credentials.
-  - Two-Factor Authentication (OTP via email/SMS or authenticator app).
+## Setup Instructions
 
-- **Voting Process**
-  - Encrypted ballot submission.
-  - Prevention of duplicate or fraudulent votes.
+1. **Database**
+   - Create DB `online_voting`
+   - Import `sql/schema.sql`
+   - Update `config/database.php` credentials
 
-- **Admin Dashboard**
-  - Manage voter lists and election setup.
-  - Monitor voting activity and view results in real time.
+2. **PHP Environment**
+   - PHP 8+ with PDO MySQL
+   - Place project in web root (e.g., `/var/www/online-voting`)
 
-- **Security & Transparency**
-  - End-to-end encryption of votes.
-  - Audit trail for verification and accountability.
+3. **2FA Setup**
+   - After login, admins/voters can generate secret in profile (extend `api/2fa_setup.php`)
+   - Use Google Authenticator app to scan QR (add QR generation with GD library)
 
----
+4. **Security Notes**
+   - Passwords use Argon2
+   - Prepared statements everywhere
+   - CSRF, rate limiting, session regen
+   - Audit logs
+   - Production: Use HTTPS, proper env vars, WAF, rate limit with Redis
 
-## 🎯 Objectives
-- Enhance **security** and **trust** in online elections.
-- Ensure **accessibility** for voters regardless of location.
-- Minimize risks of fraud, impersonation, or multiple voting.
-- Deliver **fast and accurate** election results.
+5. **Extend**
+   - Add `api/elections.php`, `api/results.php`, candidate management
+   - Implement admin CRUD for elections/candidates
+   - Add email verification
 
----
+## Testing
+- Register voter
+- Login, setup 2FA
+- Admin login (admin@example.com / password)
+- Cast votes
 
-## 🛠️ Tech Stack
-- **Frontend**: HTML, CSS, JavaScript (React/Angular optional)
-- **Backend**: Node.js / Django / PHP
-- **Database**: MySQL / PostgreSQL / MongoDB
-- **Authentication**: JWT + Two-Factor Authentication (OTP)
-- **Deployment**: Docker / Cloud Hosting (AWS, Azure, or Heroku)
+**For production scale: Add caching, horizontal scaling, blockchain for immutability if needed.**
 
----
-
-## 🚀 Installation & Setup
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/your-username/online-voting-system.git
+Security first! Review all code before deployment.
