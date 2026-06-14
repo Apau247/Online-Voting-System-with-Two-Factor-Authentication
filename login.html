@@ -50,25 +50,33 @@
 
           try {
             const formData = new FormData(form);
+            
             const response = await fetch('../api/login.php', {
               method: 'POST',
               body: formData,
               credentials: 'same-origin'
             });
 
-            const data = await response.json().catch(() => ({}));
+            let data;
+            try {
+              data = await response.json();
+            } catch {
+              data = { success: false, error: 'Invalid server response' };
+            }
 
             if (data.success) {
               if (data.requires_2fa) {
+                // Important: Pass user session info if needed
                 window.location.href = '2fa.html';
               } else {
-                window.location.href = data.redirect || 'dashboard.html';
+                window.location.href = data.redirect || 'vote.html';
               }
             } else {
-              alert(data.error || 'Login failed');
+              alert(data.error || 'Login failed. Please check your credentials.');
             }
           } catch (err) {
-            alert('Network error. Please try again.');
+            console.error(err);
+            alert('Network error. Please check your connection and try again.');
           } finally {
             submitBtn.disabled = false;
             submitBtn.textContent = originalText;
