@@ -14,28 +14,60 @@
     <form id="twoFaForm">
       <input type="hidden" name="csrf_token" value="" />
       <div>
-        <label>2FA Code:</label>
-        <input type="text" name="code" inputmode="numeric" pattern="[0-9]{6}" required />
+        <label for="code">2FA Code:</label>
+        <input type="text" id="code" name="code" inputmode="numeric" 
+               pattern="[0-9]{6}" maxlength="6" required />
       </div>
       <button type="submit">Verify</button>
     </form>
   </div>
 
   <script>
-    document.querySelector('input[name="csrf_token"]').value = 'csrf-placeholder';
+    async function setCsrfToken() {
+      try {
+        const res = await fetch('../api/csrf.php');
+        const data = await res.json();
+        const csrfInput = document.querySelector('input[name="csrf_token"]');
+        if (csrfInput) csrfInput.value = data.csrf_token;
+      } catch (e) {
+        console.error("Failed to load CSRF token");
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', setCsrfToken);
 
     document.getElementById('twoFaForm').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const formData = new FormData(e.target);
-      const response = await fetch('api/verify-2fa.php', { method: 'POST', body: formData });
-      const data = await response.json().catch(()=>({}));
-      if (data.success) {
-        window.location.href = data.redirect || 'vote.html';
-      } else {
-        alert(data.error || 'Verification failed');
+
+      const form = e.target;
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Verifying...';
+
+      try {
+        const formData = new FormData(form);
+        const response = await fetch('../api/verify-2fa.php', {
+          method: 'POST',
+          body: formData,
+          credentials: 'same-origin'
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (data.success) {
+          window.location.href = data.redirect || 'vote.html';
+        } else {
+          alert(data.error || 'Invalid code. Please try again.');
+        }
+      } catch (err) {
+        alert('Network error. Please try again.');
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
       }
     });
   </script>
 </body>
 </html>
-

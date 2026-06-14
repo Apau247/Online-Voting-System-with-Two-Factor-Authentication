@@ -10,59 +10,131 @@
   <div class="container">
     <h2>Cast your vote</h2>
     <div id="elections" style="margin-top:14px"></div>
-    <p style="color:var(--muted)">You must be logged in and have 2FA enabled.</p>
+    <p style="color:var(--muted)">You must be logged in to vote.</p>
   </div>
 
   <script>
-    (async function(){
-      const root = document.getElementById('elections');
-      try{
-        const res = await fetch('api/elections.php');
+    // Fetch CSRF token from server
+    async function setCsrfToken() {
+      try {
+        const res = await fetch('../api/csrf.php');
         const data = await res.json();
-        if(!data.success) { root.innerHTML = '<p>'+ (data.error||'Could not load elections') +'</p>'; return; }
+        return data.csrf_token;
+      } catch (e) {
+        console.error("Failed to load CSRF token");
+        return '';
+      }
+    }
+
+    // Load elections
+    async function loadElections() {
+      const root = document.getElementById('elections');
+      root.innerHTML = '<p>Loading elections...</p>';
+
+      try {
+        const res = await fetch('../api/elections.php');
+        const data = await res.json();
+
+        if (!data.success) {
+          root.innerHTML = `<p>${data.error || 'Could not load elections'}</p>`;
+          return;
+        }
+
+        if (!data.elections || data.elections.length === 0) {
+          root.innerHTML = '<p>No active elections available at the moment.</p>';
+          return;
+        }
+
         root.innerHTML = data.elections.map(e => `
-          <div style="margin:14px 0;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:12px">
+          <div class="election-card" style="margin:14px 0;padding:12px;border:1px solid rgba(255,255,255,.08);border-radius:12px">
             <h3 style="margin:0 0 8px 0">${e.title}</h3>
-            <button onclick="loadCandidates(${e.id})">Vote</button>
+            <p>${e.description || ''}</p>
+            <button onclick="loadCandidates(${e.id})" class="vote-btn">View Candidates & Vote</button>
             <div id="cand-${e.id}" style="margin-top:10px"></div>
           </div>
         `).join('');
-      }catch(err){
-        root.innerHTML = '<p>Failed to load elections.</p>';
+      } catch (err) {
+        console.error(err);
+        root.innerHTML = '<p>Failed to load elections. Please try again later.</p>';
       }
-    })();
-
-    window.loadCandidates = async function(electionId){
-      const target = document.getElementById('cand-'+electionId);
-      target.innerHTML = 'Loading candidates...';
-      const res = await fetch('api/elections.php?election_id='+encodeURIComponent(electionId));
-      const data = await res.json();
-      if(!data.success){ target.innerHTML = '<p>'+ (data.error||'Failed') +'</p>'; return; }
-
-      target.innerHTML = `
-        <form id="vote-form-${electionId}">
-          <input type="hidden" name="election_id" value="${electionId}">
-          <input type="hidden" name="csrf_token" value="csrf-placeholder">
-          ${data.candidates.map(c => `
-            <label style="display:flex;gap:10px;align-items:center;margin:10px 0;cursor:pointer">
-              <input type="radio" name="candidate_id" value="${c.id}" required />
-              <span><strong>${c.name}</strong>${c.party? ' ('+c.party+')':''}</span>
-            </label>
-          `).join('')}
-          <button type="submit">Submit vote</button>
-        </form>
-      `;
-
-      document.getElementById('vote-form-'+electionId).addEventListener('submit', async (e)=>{
-        e.preventDefault();
-        const formData = new FormData(e.target);
-        const r = await fetch('api/vote.php', { method:'POST', body: formData });
-        const d = await r.json().catch(()=>({}));
-        if(d.success){ alert('Vote submitted'); window.location.reload(); }
-        else alert(d.error || 'Vote failed');
-      });
     }
+
+    // Load candidates for a specific election
+    window.loadCandidates = async function(electionId) {
+      const target = document.getElementById('cand-' + electionId);
+      target.innerHTML = '<p>Loading candidates...</p>';
+
+      try {
+        const res = await fetch(`../api/elections.php?election_id=${encodeURIComponent(electionId)}`);
+        const data = await res.json();
+
+        if (!data.success) {
+          target.innerHTML = `<p>${data.error || 'Failed to load candidates'}</p>`;
+          return;
+        }
+
+        const csrfToken = await setCsrfToken();
+
+        target.innerHTML = `
+          <form id="vote-form-${electionId}">
+            <input type="hidden" name="election_id" value="${electionId}">
+            <input type="hidden" name="csrf_token" value="${csrfToken}">
+            
+            ${data.candidates.map(c => `
+              <label style="display:flex;gap:10px;align-items:center;margin:10px 0;cursor:pointer">
+                <input type="radio" name="candidate_id" value="${c.id}" required />
+                <span><strong>${c.name}</strong>${c.party ? ' (' + c.party + ')' : ''}</span>
+              </label>
+            `).join('')}
+            
+            <button type="submit" class="vote-btn">Submit Vote</button>
+          </form>
+        `;
+
+        // Add submit handler
+        document.getElementById('vote-form-' + electionId).addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const form = e.target;
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Submitting vote...';
+
+          try {
+            const formData = new FormData(form);
+            const response = await fetch('../api/vote.php', {
+              method: 'POST',
+              body: formData,
+              credentials: 'same-origin'
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (result.success) {
+              alert('✅ Vote submitted successfully!');
+              window.location.reload();
+            } else {
+              alert(result.error || 'Failed to submit vote');
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Network error. Please try again.');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        });
+
+      } catch (err) {
+        console.error(err);
+        target.innerHTML = '<p>Failed to load candidates.</p>';
+      }
+    }
+
+    // Initialize page
+    document.addEventListener('DOMContentLoaded', loadElections);
   </script>
 </body>
 </html>
-

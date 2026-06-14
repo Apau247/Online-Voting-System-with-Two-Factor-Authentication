@@ -12,12 +12,12 @@
         <form id="loginForm">
             <input type="hidden" name="csrf_token" value="">
             <div>
-                <label>Email:</label>
-                <input type="email" name="email" required>
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
             </div>
             <div>
-                <label>Password:</label>
-                <input type="password" name="password" required>
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required minlength="8">
             </div>
             <button type="submit">Login</button>
         </form>
@@ -25,26 +25,54 @@
     </div>
 
     <script>
-        // CSRF token
-        document.querySelector('input[name="csrf_token"]').value = 'csrf-placeholder'; // Set via JS/PHP
+        async function setCsrfToken() {
+          try {
+            const res = await fetch('../api/csrf.php');
+            const data = await res.json();
+            const csrfInput = document.querySelector('input[name="csrf_token"]');
+            if (csrfInput) csrfInput.value = data.csrf_token;
+          } catch (e) {
+            console.error("Failed to load CSRF token");
+          }
+        }
+
+        document.addEventListener('DOMContentLoaded', setCsrfToken);
 
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const formData = new FormData(e.target);
-            const response = await fetch('api/login.php', {
-                method: 'POST',
-                body: formData
+          e.preventDefault();
+
+          const form = e.target;
+          const submitBtn = form.querySelector('button[type="submit"]');
+          const originalText = submitBtn.textContent;
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = 'Logging in...';
+
+          try {
+            const formData = new FormData(form);
+            const response = await fetch('../api/login.php', {
+              method: 'POST',
+              body: formData,
+              credentials: 'same-origin'
             });
-            const data = await response.json();
+
+            const data = await response.json().catch(() => ({}));
+
             if (data.success) {
-                if (data.requires_2fa) {
-                    window.location.href = '2fa.html';
-                } else {
-                    window.location.href = data.redirect;
-                }
+              if (data.requires_2fa) {
+                window.location.href = '2fa.html';
+              } else {
+                window.location.href = data.redirect || 'dashboard.html';
+              }
             } else {
-                alert(data.error);
+              alert(data.error || 'Login failed');
             }
+          } catch (err) {
+            alert('Network error. Please try again.');
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
         });
     </script>
 </body>
