@@ -39,12 +39,43 @@ function checkRateLimit($key, $maxAttempts = 5, $decaySeconds = 300) {
     return true;
 }
 
+// Base32 encoding/decoding (RFC 4648)
+function base32_encode($data) {
+    $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    $binary = '';
+    foreach (str_split($data) as $char) {
+        $binary .= str_pad(decbin(ord($char)), 8, '0', STR_PAD_LEFT);
+    }
+    $binary = str_pad($binary, ceil(strlen($binary) / 5) * 5, '0');
+    $result = '';
+    foreach (str_split($binary, 5) as $chunk) {
+        $result .= $alphabet[bindec(str_pad($chunk, 5, '0'))];
+    }
+    return $result;
+}
+
+function base32_decode($data) {
+    $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+    $binary = '';
+    foreach (str_split(strtoupper($data)) as $char) {
+        $val = strpos($alphabet, $char);
+        if ($val === false) continue;
+        $binary .= str_pad(decbin($val), 5, '0', STR_PAD_LEFT);
+    }
+    $result = '';
+    foreach (str_split($binary, 8) as $chunk) {
+        if (strlen($chunk) < 8) break;
+        $result .= chr(bindec($chunk));
+    }
+    return $result;
+}
+
 // TOTP 2FA Functions (Pure PHP implementation - Google Authenticator compatible)
 function generateTOTP($secret) {
     // Simple TOTP generator - in production use robust library like otphp
     $time = floor(time() / 30);
-    $data = pack('N', $time);
-    $hash = hash_hmac('sha1', $data, base64_decode($secret), true);
+    $data = pack('J', $time);
+    $hash = hash_hmac('sha1', $data, base32_decode($secret), true);
     $offset = ord($hash[19]) & 0xf;
     $code = (
         ((ord($hash[$offset]) & 0x7f) << 24) |
@@ -61,7 +92,7 @@ function verifyTOTP($secret, $code) {
 }
 
 function generateTOTPSecret() {
-    return base64_encode(random_bytes(20));  // 16 bytes base32 in practice
+    return base32_encode(random_bytes(20));  // 20 bytes → 32 char base32
 }
 
 // Login required middleware

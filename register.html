@@ -36,7 +36,7 @@
     // Fetch CSRF token from server
     async function setCsrfToken() {
       try {
-        const res = await fetch('../api/csrf.php');  // Adjust path if needed
+        const res = await fetch('api/csrf.php');
         const data = await res.json();
         const csrfInput = document.querySelector('input[name="csrf_token"]');
         if (csrfInput) csrfInput.value = data.csrf_token;
@@ -61,7 +61,7 @@
 
       try {
         const formData = new FormData(form);
-        const response = await fetch('../api/register.php', {  // Adjust path if needed
+        const response = await fetch('api/register.php', {
           method: 'POST',
           body: formData,
           credentials: 'same-origin'

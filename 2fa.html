@@ -25,7 +25,7 @@
   <script>
     async function setCsrfToken() {
       try {
-        const res = await fetch('../api/csrf.php');
+        const res = await fetch('api/csrf.php');
         const data = await res.json();
         const csrfInput = document.querySelector('input[name="csrf_token"]');
         if (csrfInput) csrfInput.value = data.csrf_token;
@@ -48,7 +48,7 @@
 
       try {
         const formData = new FormData(form);
-        const response = await fetch('../api/verify-2fa.php', {
+        const response = await fetch('api/verify-2fa.php', {
           method: 'POST',
           body: formData,
           credentials: 'same-origin'

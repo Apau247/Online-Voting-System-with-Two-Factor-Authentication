@@ -2,16 +2,11 @@
 session_start();
 header('Content-Type: application/json');
 
-$host = 'localhost';
-$db   = 'online_voting';
-$user = 'root';
-$pass = '';
+require_once __DIR__ . '/../config/database.php';
 
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch(PDOException $e) {
-    echo json_encode(['success' => false, 'error' => 'Database connection failed']);
+if (!checkRateLimit('login', 5, 300)) {
+    http_response_code(429);
+    echo json_encode(['success' => false, 'error' => 'Too many login attempts. Try again later.']);
     exit;
 }
 

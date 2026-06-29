@@ -17,7 +17,7 @@
     // Fetch CSRF token from server
     async function setCsrfToken() {
       try {
-        const res = await fetch('../api/csrf.php');
+        const res = await fetch('api/csrf.php');
         const data = await res.json();
         return data.csrf_token;
       } catch (e) {
@@ -32,7 +32,7 @@
       root.innerHTML = '<p>Loading elections...</p>';
 
       try {
-        const res = await fetch('../api/elections.php');
+        const res = await fetch('api/elections.php');
         const data = await res.json();
 
         if (!data.success) {
@@ -65,7 +65,7 @@
       target.innerHTML = '<p>Loading candidates...</p>';
 
       try {
-        const res = await fetch(`../api/elections.php?election_id=${encodeURIComponent(electionId)}`);
+        const res = await fetch(`api/elections.php?election_id=${encodeURIComponent(electionId)}`);
         const data = await res.json();
 
         if (!data.success) {
@@ -104,7 +104,7 @@
 
           try {
             const formData = new FormData(form);
-            const response = await fetch('../api/vote.php', {
+            const response = await fetch('api/vote.php', {
               method: 'POST',
               body: formData,
               credentials: 'same-origin'

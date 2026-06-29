@@ -27,7 +27,7 @@
     <script>
         async function setCsrfToken() {
           try {
-            const res = await fetch('../api/csrf.php');
+            const res = await fetch('api/csrf.php');
             const data = await res.json();
             const csrfInput = document.querySelector('input[name="csrf_token"]');
             if (csrfInput) csrfInput.value = data.csrf_token;
@@ -35,23 +35,23 @@
             console.error("Failed to load CSRF token");
           }
         }
-
+    
         document.addEventListener('DOMContentLoaded', setCsrfToken);
-
+    
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
           e.preventDefault();
-
+    
           const form = e.target;
           const submitBtn = form.querySelector('button[type="submit"]');
           const originalText = submitBtn.textContent;
-
+    
           submitBtn.disabled = true;
           submitBtn.textContent = 'Logging in...';
-
+    
           try {
             const formData = new FormData(form);
             
-            const response = await fetch('../api/login.php', {
+            const response = await fetch('api/login.php', {
               method: 'POST',
               body: formData,
               credentials: 'same-origin'
